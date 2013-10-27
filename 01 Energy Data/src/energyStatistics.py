@@ -11,3 +11,5 @@ print described
 # Create a boxplot
 bp = data.boxplot()
 plt.show()
+
+# Make boxbplot per Energy Source
