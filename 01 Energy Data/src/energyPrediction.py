@@ -5,13 +5,15 @@ from sklearn.svm import SVR
 from sklearn import cross_validation
 from sklearn import metrics
 
+np.set_printoptions(precision=3)
+
 # Read data from CSV File
 energyDataFrame = pd.read_csv('../resources/EnergyMixGeo.csv')
 numKeys = len(energyDataFrame);
 
 # extract trainings data and target data 
-trainingData = np.array(energyDataFrame[['Oil', 'Coal', 'Gas', 'Nuclear', 'Hydro']])
-targetData = energyDataFrame['CO2Emm']
+features = np.array(energyDataFrame[['Oil', 'Coal', 'Gas', 'Nuclear', 'Hydro']])
+targets = energyDataFrame['CO2Emm']
 
 # create SVR
 # Standard Configuration
@@ -34,33 +36,28 @@ svr = SVR(C= 1.0, epsilon= 0.4, kernel='linear')
 # Average Absolute Deviation: 0.00136170016638
 
 # score
-score = cross_validation.cross_val_score(svr, trainingData, targetData, scoring ="mean_squared_error", cv=10)
-print "Cross Validation Score: %0.3f (+/- %0.3f)" % (score.mean(), score.std()/2)
+scores = cross_validation.cross_val_score(svr, features, targets, scoring ="mean_squared_error", cv=10)
+print "Cross Validation Score for each Iteration:"
+print scores
+print "\nCross Validation Score Mean: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()/2)
 
 # start fitting
-fittedData = svr.fit(trainingData, targetData)
+fittedData = svr.fit(features, targets)
 #print fittedData
 
-# predict the data
-predictedData = svr.predict(trainingData)
-
+# predict the data using trainings-data from the SVR
+predictedData = svr.predict(features)
 
 # calculate the absolute deviation
-absDeviation = predictedData - targetData
+absDeviation = predictedData - targets
+print "\nMean Absolute Deviation: %0.3f" % (absDeviation.mean())
 
-MSE=1.0/numKeys*np.sum((predictedData-targetData)**2)
-MAD=1.0/numKeys*np.sum(np.abs(predictedData-targetData))
-print "Mean Squared Error %2.3f" % (MSE)
-print "Mean Absolute Difference %2.3f" % (MAD)
-
-print "Average Absolute Deviation: " + str(absDeviation.mean())
-
-print "\nSVR-Coeficient:"
+print "\nSVR-Coefficients:"
 print svr.coef_
 
-# plt.stem(np.arange(numKeys), absDeviation)
-# plt.title('Prediction Error')
-# plt.show()
-
-plt.plot(np.arange(numKeys), predictedData, '-r', targetData, '-k')
+#plt.stem(np.arange(numKeys), absDeviation)
+#plt.title('Prediction Error')
 #plt.show()
+
+plt.plot(np.arange(numKeys), predictedData, '-r', targets, '-k')
+plt.show()
