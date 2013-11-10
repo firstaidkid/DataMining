@@ -214,6 +214,12 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
+<<<<<<< HEAD
 *.sublime-project
 
 *.sublime-workspace
+=======
+*.sublime-workspace
+
+*.sublime-project
+>>>>>>> steffen
