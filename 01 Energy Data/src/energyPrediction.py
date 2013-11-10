@@ -27,13 +27,7 @@ targets = energyDataFrame['CO2Emm']
 # The original SVM formulations for Regression (SVR) used parameters C [0, inf) and epsilon[0, inf) to apply a penalty to the optimization for points which were not correctly predicted.
 
 # Best Configuration:
-svr = SVR(C= 1.0, epsilon= 0.4, kernel='linear')
-
-# Cross Validation Score: -0.032 (+/- 0.013)
-# SVR(C=10.0, cache_size=200, coef0=0.0, degree=3, epsilon=0.1, gamma=0.0,
-#   kernel=linear, max_iter=-1, probability=False, random_state=None,
-#   shrinking=True, tol=0.001, verbose=False)
-# Average Absolute Deviation: 0.00136170016638
+svr = SVR(C= 5.0, epsilon= 0.109, kernel='linear')
 
 # score
 scores = cross_validation.cross_val_score(svr, features, targets, scoring ="mean_squared_error", cv=10)
@@ -50,7 +44,10 @@ predictedData = svr.predict(features)
 
 # calculate the absolute deviation
 absDeviation = predictedData - targets
-print "\nMean Absolute Deviation: %0.3f" % (absDeviation.mean())
+meanAbsDevitation = absDeviation.mean();
+if meanAbsDevitation < 0:
+	meanAbsDevitation *= -1
+print "\nMean Absolute Deviation: %0.3f" % (meanAbsDevitation)
 
 print "\nSVR-Coefficients:"
 print svr.coef_
