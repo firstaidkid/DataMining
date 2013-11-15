@@ -29,7 +29,7 @@ def topMatches(prefs,person,similarity):
 result_euclid = topMatches(rm.critics, "Toby", rm.sim_euclid)
 result_pearson = topMatches(rm.critics, "Toby", rm.sim_pearson)
 
-print "Euclid:\n%s \n\nPearson:\n%s" % (str(result_euclid), str(result_pearson))
+#print "Euclid:\n%s \n\nPearson:\n%s" % (str(result_euclid), str(result_pearson))
 
 
 #2.3 Berechnung von Empfehlungen mit User basiertem Collaborative Filtering
@@ -37,6 +37,7 @@ def getRecommendations(prefs,person,similarity):
 	_correlations = topMatches(prefs,person,similarity)
 	_sum = dict()
 	_sumCorrelations = dict()
+
 	#find films which person did not watch
 	for critic in prefs:
 		if critic != person:
@@ -46,10 +47,10 @@ def getRecommendations(prefs,person,similarity):
 
 			# go through all films of that critic
 			for film in prefs[critic]:
-				# if person has not rated the film yet
-				if film not in prefs[person]:
+				# if person has not rated the film yet -> or if band is 0
+				if (film not in prefs[person]) or (prefs[person][film] == 0):
 					# add the movie to the possible moview of not in yet
-					if film not in _sum:	# BANDPROBLEM: alle Bands sind im dict, aber mit wert 0
+					if film not in _sum:
 						_sum[film] = 0.0
 						_sumCorrelations[film] = 0
 					#endif
@@ -72,11 +73,14 @@ def getRecommendations(prefs,person,similarity):
 	# save into dataframe and transpose
 	df = pd.DataFrame(_kSum, index=["kSum"]).transpose();
 
-	# sort and return
-	return df.sort(columns=["kSum"], ascending=False)
+	# sort
+	df = df.sort(columns=["kSum"], ascending=False)
 
-recommendations = getRecommendations(rm.critics, "Toby", rm.sim_euclid)
-print "\n %s \n\n" % (str(recommendations))
+	# and return
+	return df
+
+#peopleRec = getRecommendations(rm.critics, "Toby", rm.sim_euclid)
+#print "\n %s \n\n" % (str(peopleRec))
 
 #2.4 Berechnung von Empfehlungen mit ICF
 def transformCritics(critics):
@@ -98,7 +102,7 @@ def transformCritics(critics):
 	return films
 
 
-transCritics = transformCritics(rm.critics)
+#transCritics = transformCritics(rm.critics)
 
 def calculateSimilarItems(prefs, similarity):
 	# create new dictionary for similarities
@@ -151,9 +155,9 @@ def getRecommendedItems(prefs, person, similarity):
 	return df.sort(columns=["Normalized"], ascending=False)
 
 
-print "getRecommendedItems(EUCLID)"
-print getRecommendedItems(transCritics,"Toby",rm.sim_euclid)
+#print "getRecommendedItems(EUCLID)"
+#print getRecommendedItems(transCritics,"Toby",rm.sim_euclid)
 
-print "\ngetRecommendedItems(PEARSON)"
-print getRecommendedItems(transCritics,"Toby",rm.sim_pearson)
+#print "\ngetRecommendedItems(PEARSON)"
+#print getRecommendedItems(transCritics,"Toby",rm.sim_pearson)
 
