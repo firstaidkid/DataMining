@@ -100,6 +100,38 @@ def sim_RusselRao(prefs,person1,person2,normed=True):
       return commons
   else:
       return commons*1.0/len(prefs[person1])  
-      
-  
+
+def createLastfmUserDict(group):
+  userDict = dict()
+  bandSet = set()
+  for user in group:
+    #create empty dict
+    userDict[user.get_name()] = dict()
+
+    # get top artist from user
+    userBands = user.get_top_artists()[0:20]
+
+    # got through all topband-items of that user
+    for band in userBands:
+      # save his/her topbands into the dict
+      userDict[user.get_name()][band.item.get_name()] = 1
+      # save bandnames into set
+      bandSet.add(band.item.get_name())
+
+  for  user in group:
+    for band in bandSet:
+      if band not in userDict[user.get_name()]:
+        userDict[user.get_name()][band] = 0
+  return userDict
+
+
+
+
+
+
+
+
+
+
+
 

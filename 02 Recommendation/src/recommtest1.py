@@ -49,7 +49,7 @@ def getRecommendations(prefs,person,similarity):
 				# if person has not rated the film yet
 				if film not in prefs[person]:
 					# add the movie to the possible moview of not in yet
-					if film not in _sum:
+					if film not in _sum:	# BANDPROBLEM: alle Bands sind im dict, aber mit wert 0
 						_sum[film] = 0.0
 						_sumCorrelations[film] = 0
 					#endif
