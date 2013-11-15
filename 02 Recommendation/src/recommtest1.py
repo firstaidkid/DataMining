@@ -76,7 +76,7 @@ def getRecommendations(prefs,person,similarity):
 	return df.sort(columns=["kSum"], ascending=False)
 
 recommendations = getRecommendations(rm.critics, "Toby", rm.sim_euclid)
-print "\n %s" % (str(recommendations))
+print "\n %s \n\n" % (str(recommendations))
 
 #2.4 Berechnung von Empfehlungen mit ICF
 def transformCritics(critics):
@@ -109,14 +109,51 @@ def calculateSimilarItems(prefs, similarity):
 		simFilms[film] = topMatches(prefs, film, similarity)
 	#endfor
 	return simFilms
-	
-
-def getRecommendedItems(prefs,similarity):
 
 
+def getRecommendedItems(prefs, person, similarity):
+	notRatedFilms = dict()
+	ratedFilms = dict()
+	similarItems = calculateSimilarItems(prefs, similarity)
+	# iterate through all films
+	for film in prefs:
+		# filter not rated films
+		if person not in prefs[film]:
+			notRatedFilms[film] = similarItems[film]
+		else:
+			ratedFilms[film] = prefs[film][person]
 
-	return dingsbums
+	_sum = dict()
+	_sumSim = dict()
+	# go through all not rated films
+	for notRatedFilm in notRatedFilms:
+		if notRatedFilm not in _sum:
+			_sum[notRatedFilm] = 0
+			_sumSim[notRatedFilm] = 0
+		# get rated films
+		for ratedFilm in ratedFilms:
+			# do not trust films with negative pearson similarities!
+			if similarity == rm.sim_pearson and  similarItems[notRatedFilm]["Similarity"][ratedFilm] <= 0:
+				continue
+			# add up the products of rating and similarity
+			_sum[notRatedFilm] +=ratedFilms[ratedFilm]*notRatedFilms[notRatedFilm]['Similarity'][ratedFilm]
+			# add up similarities
+			_sumSim[notRatedFilm] += notRatedFilms[notRatedFilm]['Similarity'][ratedFilm]
+
+	# normalize results
+	for film in _sum:
+		if _sumSim[film] == 0:
+			continue
+		_sum[film] /= _sumSim[film]
+
+	# sort results
+	df = pd.DataFrame(_sum, index=["Normalized"]).transpose();
+	return df.sort(columns=["Normalized"], ascending=False)
 
 
+print "getRecommendedItems(EUCLID)"
+print getRecommendedItems(transCritics,"Toby",rm.sim_euclid)
 
+print "\ngetRecommendedItems(PEARSON)"
+print getRecommendedItems(transCritics,"Toby",rm.sim_pearson)
 
