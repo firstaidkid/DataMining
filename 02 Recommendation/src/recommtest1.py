@@ -77,3 +77,46 @@ def getRecommendations(prefs,person,similarity):
 
 recommendations = getRecommendations(rm.critics, "Toby", rm.sim_euclid)
 print "\n %s" % (str(recommendations))
+
+#2.4 Berechnung von Empfehlungen mit ICF
+def transformCritics(critics):
+	# create a new dictionary
+	films = dict()
+	# iterate over critics
+	for critic in critics:
+		# iterate over films of that critic
+		for film in critics[critic]:
+			# check if film is already in films dictionary
+			if film not in films:
+				# if not, create new entry
+				films[film] = dict()
+			#endif
+			# add critic and his rating to that film
+			films[film][critic]=critics[critic][film]
+		#endfor
+	# endfor
+	return films
+
+
+transCritics = transformCritics(rm.critics)
+
+def calculateSimilarItems(prefs, similarity):
+	# create new dictionary for similarities
+	simFilms = dict()
+	# iterate over films
+	for film in prefs:
+		# calculate correlations for each film and save them to dictionary
+		simFilms[film] = topMatches(prefs, film, similarity)
+	#endfor
+	return simFilms
+	
+
+def getRecommendedItems(prefs,similarity):
+
+
+
+	return dingsbums
+
+
+
+
