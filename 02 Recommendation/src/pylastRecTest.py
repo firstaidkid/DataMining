@@ -22,4 +22,4 @@ userDict = rm.createLastfmUserDict(users)
 #print topMatches(userDict, 'LauraKay87', rm.sim_euclid)
 recommendation = rmt.getRecommendations(userDict, 'LauraKay87', rm.sim_euclid)
 
-print str(recommendation)
+print str(recommendation['kSum'])
