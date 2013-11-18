@@ -1,23 +1,23 @@
 #imports
 
 # Exercise 2.1.1
-def getwords(doc, minWordLength = 2, maxWordLength = 20):
+def getwords(doc, minWordLength, maxWordLength):
 	# split input string by whitespace
 	words = doc.split()
 	# delete punctuation mark and ignore words of min- and max length
-	cleanedWords= [t.strip("().,:;!?-").lower() for t in words if (len(t) > minWordLength) and (len(t) < maxWordLength)]
+	cleanedWords= [t.strip("().,:;!?-").lower() for t in words if (len(t) >= minWordLength) and (len(t) <= maxWordLength)]
 	# fill Dictionary --> key: word value: 1
 	wordDict = {key:1 for key in cleanedWords}
 	return wordDict
 
-getwords("Hello World. Today is a beautiful monday morning (the 18th of November). dieseswortistvielzulangsagichdir")
-
 # Exercise 2.1.2
 class Classifier:
-	def __init__(self, getfeatures):
+	def __init__(self, getfeatures, minWordLength = 2, maxWordLength = 20):
 		self.fc = dict()
 		self.cc = dict()
 		self.initprob = 1.0
+		self.minWordLength = minWordLength
+		self.maxWordLength = maxWordLength
 		self.getfeatures = getfeatures
 
 	# increases fc-count for given word and category
@@ -77,7 +77,7 @@ class Classifier:
 	# takes a text and the corresponding category and trains the classifier
 	def train(self, item, cat):
 		# get features
-		features = self.getfeatures(item)
+		features = self.getfeatures(item, self.minWordLength, self.maxWordLength)
 		
 		# increment category count for each word
 		for key in features:
@@ -96,7 +96,7 @@ class Classifier:
 
 	# return probability for item being of category cat
 	def prob(self, item, cat):
-		features = self.getfeatures(item)
+		features = self.getfeatures(item, self.minWordLength, self.maxWordLength)
 		probs = 1.0
 		for f in features:
 			probs *= self.weightedprob(f,cat)
@@ -106,28 +106,26 @@ class Classifier:
 
 
 
-clf = Classifier(getwords)
-clf.train("nobody owns the water", "G")
-clf.train("the quick rabbit jumps fences", "G")
-clf.train("buy pharmaceuticals now", "B")
-clf.train("make quick money at the online casino", "B")
-clf.train("the quick brown fox jumps", "G")
-clf.train("next meeting is at night", "G")
-clf.train("meeting with your superstar", "B")
-clf.train("money like water", "B")
+if __name__ == "__main__":
+	clf = Classifier(getwords)
+	clf.train("nobody owns the water", "G")
+	clf.train("the quick rabbit jumps fences", "G")
+	clf.train("buy pharmaceuticals now", "B")
+	clf.train("make quick money at the online casino", "B")
+	clf.train("the quick brown fox jumps", "G")
+	clf.train("next meeting is at night", "G")
+	clf.train("meeting with your superstar", "B")
+	clf.train("money like water", "B")
 
-item = "the money jumps"
-good = clf.prob(item,"G")
-bad = clf.prob(item,"B")
+	item = "the money jumps"
+	good = clf.prob(item,"G")
+	bad = clf.prob(item,"B")
 
-pgood = good/(good+bad)
-pbad = bad/(good+bad)
+	pgood = good/(good+bad)
+	pbad = bad/(good+bad)
 
-print "GOOD: " + str(pgood)
-print "BAD: " + str(pbad)
-print "Result: " + max({"G": pgood, "B": pbad})
-
-
-
+	print "GOOD: " + str(pgood)
+	print "BAD: " + str(pbad)
+	print "Result: " + max({"G": pgood, "B": pbad})
 
 

@@ -1,5 +1,11 @@
 import feedparser
+import docclass as doc
+import sys
+reload(sys)
+sys.setdefaultencoding('UTF-8')
 
+# create own classifier
+clf = doc.Classifier(doc.getwords, minWordLength=3)
 
 def stripHTML(h):
   p=''
@@ -35,44 +41,46 @@ countnews={}
 countnews['tech']=0
 countnews['nontech']=0
 countnews['test']=0
-print "--------------------News from trainTech------------------------"
+print "--------------------Training Tech------------------------"
 for feed in trainTech:
     f=feedparser.parse(feed)
     for e in f.entries:
-      print '\n---------------------------'
-      fulltext=stripHTML(e.title+' '+e.description)
-      print fulltext
+      clf.train(stripHTML(e.title+' '+e.description), "Tech")
       countnews['tech']+=1
-print "----------------------------------------------------------------"
-print "----------------------------------------------------------------"
-print "----------------------------------------------------------------"
 
-print "--------------------News from trainNonTech------------------------"
+print "--------------------Training NonTech------------------------"
 for feed in trainNonTech:
     f=feedparser.parse(feed)
     for e in f.entries:
-      print '\n---------------------------'
-      fulltext=stripHTML(e.title+' '+e.description)
-      print fulltext
+      clf.train(stripHTML(e.title+' '+e.description), "NonTech")
       countnews['nontech']+=1
 print "----------------------------------------------------------------"
-print "----------------------------------------------------------------"
-print "----------------------------------------------------------------"
 
-print "--------------------News from test------------------------"
+print "--------------------Testing------------------------"
 for feed in test:
     f=feedparser.parse(feed)
     for e in f.entries:
       print '\n---------------------------'
-      fulltext=stripHTML(e.title+' '+e.description)
-      print fulltext
+
+      # test feed with classifier
+      text = stripHTML(e.title+' '+e.description)
+      tech = clf.prob(text, 'Tech')
+      nontech = clf.prob(text, 'NonTech')
+
+      ptech = tech / (tech+nontech)
+      pnontech = nontech / (tech+nontech)
+      
+      # print result
+      print "Results for (Tech:%.3f / NonTech: %0.3f)" % (ptech, pnontech)
+      print text
+      
       countnews['test']+=1
-print "----------------------------------------------------------------"
-print "----------------------------------------------------------------"
-print "----------------------------------------------------------------"
+print "\n----------------------------------------------------------------"
 
 print 'Number of used trainings samples in categorie tech',countnews['tech']
 print 'Number of used trainings samples in categorie notech',countnews['nontech']
+
+
 print 'Number of used test samples',countnews['test']
 print '--'*30
 
