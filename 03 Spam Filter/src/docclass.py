@@ -1,14 +1,11 @@
 #imports
 
-def getwords(doc, minWordLength = 3, maxWordLength = 20):
 # Exercise 2.1.1
 def getwords(doc, minWordLength = 2, maxWordLength = 20):
 	# split input string by whitespace
 	words = doc.split()
-	print words
 	# delete punctuation mark and ignore words of min- and max length
 	cleanedWords= [t.strip("().,:;!?-").lower() for t in words if (len(t) > minWordLength) and (len(t) < maxWordLength)]
-	print cleanedWords
 	# fill Dictionary --> key: word value: 1
 	wordDict = {key:1 for key in cleanedWords}
 	return wordDict
