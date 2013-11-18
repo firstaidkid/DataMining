@@ -32,7 +32,6 @@ class Classifier:
 
 		# increment
 		self.fc[f][cat] += 1
-		return
 
 	# increases cc-count for category
 	def  incc(self, cat):
@@ -42,20 +41,27 @@ class Classifier:
 			# the initial probability is equal amongst all document categories
 			self.initprob = 1.0/len(self.cc)
 		self.cc[cat] += 1
-		return
 
 	# returns the frequency of a word in a category 
 	def fcount(self, f, cat):
 
 		# test if word is already in dictionary, if not return zero
 		if f not in self.fc:
+			#print "word " +str(f) + " not found." 
 			return 0
 
 		# test if word has been categorized for cat, if not return zero
 		if cat not in self.fc[f]:
+			#print "cat " +str(cat) + " not found for word "+str(f)+"." 
 			return 0
 		
 		return self.fc[f][cat] 
+
+	# returns the number how ofter a word is in all documents
+	def count(self, f):
+		if f not in self.fc:
+			return 0
+		return sum(self.fc[f].values())
 
 	# return the number of documents in a category
 	def catcount(self, cat):
@@ -66,7 +72,7 @@ class Classifier:
 
 	# return total number of documents
 	def totalcount(self):
-		return sum(cc.values())
+		return sum(self.cc.values())
 
 	# takes a text and the corresponding category and trains the classifier
 	def train(self, item, cat):
@@ -82,20 +88,21 @@ class Classifier:
 
 	# calculates P(f|cat)
 	def fprob(self, f, cat):
-		return self.fcount(f,cat)/self.catcount(cat)
+		return float(self.fcount(f,cat))/float(self.catcount(cat))
 
 	# calculates smoothed P(f|cat)
 	def weightedprob(self, f, cat):
-		return (self.initprob + self.fcount(f, cat) * self.fprob(f, cat))/(1+self.fcount(f, cat))
+		return (self.initprob + self.count(f) * self.fprob(f, cat))/(1+self.count(f))
 
 	# return probability for item being of category cat
 	def prob(self, item, cat):
 		features = self.getfeatures(item)
-		probs = 1
+		probs = 1.0
 		for f in features:
 			probs *= self.weightedprob(f,cat)
-			#print self.initprob
-		return probs * self.catcount(cat)
+
+		# divide P(f|cat) through a-priori of cat
+		return probs * self.catcount(cat)/self.totalcount()
 
 
 
@@ -109,14 +116,16 @@ clf.train("next meeting is at night", "G")
 clf.train("meeting with your superstar", "B")
 clf.train("money like water", "B")
 
-good = clf.prob("the money jumps","G")
-bad = clf.prob("the money jumps","B")
+item = "the money jumps"
+good = clf.prob(item,"G")
+bad = clf.prob(item,"B")
 
-print good
-print bad
+pgood = good/(good+bad)
+pbad = bad/(good+bad)
 
-print str(good/(good+bad))
-print str(bad/(good+bad))
+print "GOOD: " + str(pgood)
+print "BAD: " + str(pbad)
+print "Result: " + max({"G": pgood, "B": pbad})
 
 
 
