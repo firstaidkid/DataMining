@@ -4,6 +4,7 @@
 import feedparser
 import docclass as doc
 from urllib import urlopen
+from math import log10
 
 adventureBooks = ['http://www.gutenberg.org/cache/epub/78/pg78.txt',
 				'http://www.gutenberg.org/cache/epub/2166/pg2166.txt',
@@ -55,8 +56,8 @@ of a lost mould, contained his sherry, his port, and his
 cinnamon-spiced claret; while his beverages were refreshingly cooled
 with ice, brought at great cost from the American lakes.'''
 
-scoreAdenture = clf.prob(text, "Adventure")
-scoreMedicine = clf.prob(text, "Medicine")
+scoreAdenture = 10 * log10(clf.prob(text, "Adventure"))
+scoreMedicine = 10 * log10(clf.prob(text, "Medicine"))
 
 print "scoreAdenture: " + str(scoreAdenture)
 print "scoreMedicine: " + str(scoreMedicine)
