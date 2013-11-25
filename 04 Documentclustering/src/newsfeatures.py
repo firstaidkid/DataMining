@@ -1,7 +1,7 @@
 import feedparser as fp
 from nltk.corpus import stopwords
 import re
-
+import pandas as pd
 
 feedlist=["http://feeds.reuters.com/reuters/topNews","http://feeds.reuters.com/reuters/businessNews","http://feeds.reuters.com/reuters/worldNews","http://feeds2.feedburner.com/time/world","http://feeds2.feedburner.com/time/business","http://feeds2.feedburner.com/time/politics","http://rss.cnn.com/rss/edition.rss",	"http://rss.cnn.com/rss/edition_world.rss","http://newsrss.bbc.co.uk/rss/newsonline_world_edition/business/rss.xml","http://newsrss.bbc.co.uk/rss/newsonline_world_edition/europe/rss.xml","http://www.nytimes.com/services/xml/rss/nyt/World.xml","http://www.nytimes.com/services/xml/rss/nyt/Economy.xml"]
 
@@ -96,9 +96,22 @@ def makematrix(allw, articlew):
 temp = getarticlewords()
 matrix = makematrix(temp[0],temp[1])
 
-print matrix[0]
-print "#"*158
-print matrix[1]
+#print matrix[0]
+#print "#"*158
+fout = open("../results/wv_awm.dat", "w")
+for idx, word in enumerate(matrix[0]):
+	if idx < (len(matrix[0])-1):
+		fout.write(word+", ")
+	else:
+		fout.write(word+"\n")
 
+for idx1, article in enumerate(matrix[1]):
+	for idx2, word in enumerate(article):
+		if idx2 < (len(article)-1):
+			fout.write(str(word)+", ")
+		else:
+			fout.write(str(word))
+	if idx1 < (len(matrix[1])-1):
+		fout.write("\n")
 
-			
+fout.close()
