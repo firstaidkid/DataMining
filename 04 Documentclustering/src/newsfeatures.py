@@ -85,31 +85,36 @@ def makematrix(allw, articlew):
 			wordvec.append(word)
 
 	for article in articlew:
-		allNulls = True
 		articleList = list()
 		wordInArt.append(articleList)
 
 		for word in wordvec:
 			if word in article:
 				articleList.append(article[word])
-
-				# TODO: Delete allNulls from ArticleTitles as well! (Exercise 2.2.3)
-				allNulls = False
 			else:
 				articleList.append(0)
 
-		# if an article would be all-Nulls, delete it from the lists
-		if allNulls:
-			print "Found an allNull."
-			wordInArt.pop()
-
 	return wordvec, wordInArt
 
+def cleanMatrix(wordInArt, articletitles):
+	for idx, article in enumerate(wordInArt):
+		if sum(article) == 0:
+			wordInArt.pop(idx)
+			articletitles.pop(idx)
+			print "Cleaned allNulls with Index: " + str(idx)
+
+	return wordInArt, articletitles
+
+# create matrices
 allwords, articlewords, articletitles = getarticlewords()
+
+# create Wort-/Artikel-Matrix and Wortvektor
 wordvec, wordInArt = makematrix(allwords, articlewords)
 
-#print wordvec
-#print "#"*158
+# clean matrix by deleting articles with not words from wordvec
+wordInArt, articletitles = cleanMatrix(wordInArt, articletitles)
+
+# write intp data-file
 fout = open("../results/wv_awm.dat", "w")
 for idx, word in enumerate(wordvec):
 	if idx < (len(wordvec)-1):
