@@ -92,6 +92,8 @@ def makematrix(allw, articlew):
 		for word in wordvec:
 			if word in article:
 				articleList.append(article[word])
+
+				# TODO: Delete allNulls from ArticleTitles as well! (Exercise 2.2.3)
 				allNulls = False
 			else:
 				articleList.append(0)
@@ -103,68 +105,88 @@ def makematrix(allw, articlew):
 
 	return wordvec, wordInArt
 
-articleWords = getarticlewords()
-matrix = makematrix(articleWords[0],articleWords[1])
+allwords, articlewords, articletitles = getarticlewords()
+wordvec, wordInArt = makematrix(allwords, articlewords)
 
-#print matrix[0]
+#print wordvec
 #print "#"*158
 fout = open("../results/wv_awm.dat", "w")
-for idx, word in enumerate(matrix[0]):
-	if idx < (len(matrix[0])-1):
+for idx, word in enumerate(wordvec):
+	if idx < (len(wordvec)-1):
 		fout.write(word+", ")
 	else:
 		fout.write(word+"\n")
 
-for idx1, article in enumerate(matrix[1]):
+for idx1, article in enumerate(wordInArt):
 	for idx2, word in enumerate(article):
 		if idx2 < (len(article)-1):
 			fout.write(str(word)+", ")
 		else:
 			fout.write(str(word))
-	if idx1 < (len(matrix[1])-1):
+	if idx1 < (len(wordInArt)-1):
 		fout.write("\n")
 
 fout.close()
 
-# create numpy array from word/article-matrix
-npMatrix = np.matrix(matrix[1])
 
 # calculates the cost/distance between to matrices
 def cost(A, B):
 	return np.linalg.norm(A-B)
 
+# 2.2.4: Implementierung der NNMF
 # Matrix: A, Number of Features: m, Number of Iterations: it
 def nnmf(A, m, it):
 	_costThreshold = 5
+	r = A.shape[0]
+	c = A.shape[1]
+
+	# create array from A to have easier (element by element) matrix calculations
+	_A = np.array(A)
 
 	# check for incorrect values
-	if len(A) < m:
+	if c < m:
 		return None, None
 
 	# initially random values for "H"
-	_H = np.zeros((m,len(A)))
-	_W = np.zeros((A.shape[0], m))
+	_H = np.ones((m, c))
+	for i in range(0, m-1):
+		for j in range(0, c-1):
+			_H[i,j] = np.random.randint(0, c)
 
+	# initially random values for "W"
+	_W = np.ones((r, m))
+	for i in range(0, r):
+		for j in range(0, m):
+			_W[i,j] = np.random.randint(0, r)
 
 	for i in range(0, it):
-		#CORRECT HERE
+		_Wt = _W.transpose()
+		_Ht = _H.transpose()
+
 		# New calculation of H
-		_H = np.array(_H) * np.array( (np.array(_W.transpose())*np.array(A)) / (np.array(_W.transpose()) * np.array(_W) * np.array(_H)) )
+		_H = _H * ( np.dot(_Wt, _A) / np.dot(np.dot(_Wt,_W),_H) )
 		# New calculation of W
-		_W = np.array(_W) * np.array( (np.array(A) * np.array(_H.transpose())) / np.array(np.array(_W) * np.array(_H) * np.array(_H.transpose())) )
+		_W = _W * ( np.dot(_A, _Ht) / np.dot(np.dot(_W, _H),_Ht) )
 
 		# Calculate Cost
-		_B = np.array(_W) * np.array(_H)
-		_cost = cost(A,_B)
-		print _cost
+		_B = _W.dot(_H)
+		_cost = cost(_A,_B)
 
-		# if cost below threshold, return A
+		# if cost below threshold, return factors _W and _H
 		if _cost < _costThreshold:
-			return _W, _H
+			break
 
-	return _W, _H
+	return np.matrix(_W), np.matrix(_H)
 
 
+def showfeatures(W, H, titles, wordvec):
+	N = 6
+	M = 3
+	# TODO finish
 
-print nnmf(npMatrix, 15, 2)
+
+# create numpy matrix from word/article-matrix
+wordInArtMatrix = np.matrix(wordInArt)
+W, H = nnmf(wordInArtMatrix, 15, 2)
+
 
