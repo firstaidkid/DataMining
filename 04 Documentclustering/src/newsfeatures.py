@@ -2,6 +2,7 @@ import feedparser as fp
 from nltk.corpus import stopwords
 import re
 import pandas as pd
+import numpy as np
 
 feedlist=["http://feeds.reuters.com/reuters/topNews","http://feeds.reuters.com/reuters/businessNews","http://feeds.reuters.com/reuters/worldNews","http://feeds2.feedburner.com/time/world","http://feeds2.feedburner.com/time/business","http://feeds2.feedburner.com/time/politics","http://rss.cnn.com/rss/edition.rss",	"http://rss.cnn.com/rss/edition_world.rss","http://newsrss.bbc.co.uk/rss/newsonline_world_edition/business/rss.xml","http://newsrss.bbc.co.uk/rss/newsonline_world_edition/europe/rss.xml","http://www.nytimes.com/services/xml/rss/nyt/World.xml","http://www.nytimes.com/services/xml/rss/nyt/Economy.xml"]
 
@@ -68,6 +69,7 @@ def getarticlewords():
 def makematrix(allw, articlew):
 	wordvec = list()
 	wordInArt = list()
+
 	for word in allw:
 		articleCount = 0.0
 		if allw[word] < 4:
@@ -83,18 +85,26 @@ def makematrix(allw, articlew):
 			wordvec.append(word)
 
 	for article in articlew:
+		allNulls = True
 		articleList = list()
 		wordInArt.append(articleList)
+
 		for word in wordvec:
 			if word in article:
 				articleList.append(article[word])
+				allNulls = False
 			else:
 				articleList.append(0)
 
+		# if an article would be all-Nulls, delete it from the lists
+		if allNulls:
+			print "Found an allNull."
+			wordInArt.pop()
+
 	return wordvec, wordInArt
 
-temp = getarticlewords()
-matrix = makematrix(temp[0],temp[1])
+articleWords = getarticlewords()
+matrix = makematrix(articleWords[0],articleWords[1])
 
 #print matrix[0]
 #print "#"*158
@@ -115,3 +125,46 @@ for idx1, article in enumerate(matrix[1]):
 		fout.write("\n")
 
 fout.close()
+
+# create numpy array from word/article-matrix
+npMatrix = np.matrix(matrix[1])
+
+# calculates the cost/distance between to matrices
+def cost(A, B):
+	return np.linalg.norm(A-B)
+
+# Matrix: A, Number of Features: m, Number of Iterations: it
+def nnmf(A, m, it):
+	_costThreshold = 5
+
+	# check for incorrect values
+	if len(A) < m:
+		return None, None
+
+	# initially random values for "H"
+	_H = np.zeros((m,len(A)))
+	_W = np.zeros((A.shape[0], m))
+
+
+	for i in range(0, it):
+		#CORRECT HERE
+		# New calculation of H
+		_H = np.array(_H) * np.array( (np.array(_W.transpose())*np.array(A)) / (np.array(_W.transpose()) * np.array(_W) * np.array(_H)) )
+		# New calculation of W
+		_W = np.array(_W) * np.array( (np.array(A) * np.array(_H.transpose())) / np.array(np.array(_W) * np.array(_H) * np.array(_H.transpose())) )
+
+		# Calculate Cost
+		_B = np.array(_W) * np.array(_H)
+		_cost = cost(A,_B)
+		print _cost
+
+		# if cost below threshold, return A
+		if _cost < _costThreshold:
+			return _W, _H
+
+	return _W, _H
+
+
+
+print nnmf(npMatrix, 15, 2)
+
