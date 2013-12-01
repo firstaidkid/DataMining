@@ -4,6 +4,9 @@ from nltk.corpus import stopwords
 import re
 import pandas as pd
 import numpy as np
+import sys
+reload(sys)
+sys.setdefaultencoding("UTF-8")
 
 feedlist=["http://feeds.reuters.com/reuters/topNews","http://feeds.reuters.com/reuters/businessNews","http://feeds.reuters.com/reuters/worldNews","http://feeds2.feedburner.com/time/world","http://feeds2.feedburner.com/time/business","http://feeds2.feedburner.com/time/politics","http://rss.cnn.com/rss/edition.rss",	"http://rss.cnn.com/rss/edition_world.rss","http://newsrss.bbc.co.uk/rss/newsonline_world_edition/business/rss.xml","http://newsrss.bbc.co.uk/rss/newsonline_world_edition/europe/rss.xml","http://www.nytimes.com/services/xml/rss/nyt/World.xml","http://www.nytimes.com/services/xml/rss/nyt/Economy.xml"]
 
@@ -177,6 +180,7 @@ def nnmf(A, m, it):
 		# Calculate Cost
 		_B = _W.dot(_H)
 		_cost = cost(_A,_B)
+		print "Cost:", _cost
 
 		# if cost below threshold, return factors _W and _H
 		if _cost < _costThreshold:
@@ -189,26 +193,62 @@ def showfeatures(W, H, titles, wordvec):
 	N = 6
 	M = 3
 	subject = list()
-	# TODO finish
+
 	for i in range(H.shape[0]):
+		# create a list for every feature H
 		featureList = list()
 		for j in range(H.shape[1]):
+			# append weight of element H[i,j] and j-th word of the wordvec to the list
 			featureList.append([H[i,j], wordvec[j]])
+		# reverse sort the featureList, to get the most relevant words on top
 		featureList.sort()
 		featureList.reverse()
 
 		# print the N=6 most relevant words for a feature to the console
-		features = ""
+		featuresWords = ""
 		print "The "+str(N)+" most relevant words for feature "+str(i)+ ":" 
+		# go through featureList
 		for k in featureList[0:N]:
-			features = features + " " + str(k[1])
-			print str(k[1])+" "*(20-len(k[1]))+str(k[0])
-		print ""
-		subject.append(features)
+			# create string of all feature words that belong together
+			featuresWords = featuresWords + " " + str(k[1])
+			# print the single words and their weight property
+			print str(k[0])+" "*(20-len(str(k[0])))+str(k[1])
 
-	
-	#print the M=3 most relevant features for an article to the console
+		# create a list of all words that describe a feature
+		subject.append(featuresWords)
 
+
+	# print the M=3 most relevant features for an article to the console
+	for i in range(W.shape[0]):
+		# create a list for every article in W
+		relevanceList = list()
+		for j in range(W.shape[1]):
+			# append weight of feature at W[i,j] and its subject to the list
+			relevanceList.append([W[i,j],subject[j]])
+		# reverse sort the relevanceList, to get the most relevant subjects on top
+		relevanceList.sort()
+		relevanceList.reverse()
+
+		# print everything out to the console
+		print "Article "+str(i)+": \""+titles[i]+"\""
+		for item in relevanceList[0:M]:
+			print str(item[0]) +" "*(20-len(str(item[0]))) + str(item[1])
+
+	# print the M=3 most relevant articles for a feature to the console
+	for i in range(W.shape[1]):
+		# create a list for every posible feature of an article
+		bestArticleForFeature = list()
+		for j in range(W.shape[0]):
+			# append the weight of W[j,i] and the articles title to the list
+			bestArticleForFeature.append([W[j, i], titles[j]])
+		# reverse sort the bestArticleForFeature-list, to get the most relevant articles on top
+		bestArticleForFeature.sort()
+		bestArticleForFeature.reverse()
+
+		# print the subject and the M=3 articles with their corresponding weight to the console
+		print "Feature "+str(i)+": \"" + subject[i] +"\"" 
+		for features in bestArticleForFeature[0:M]:
+			print str(features[0]) + " "*(20-len(str(features[0]))) + str(features[1])
 
 	
 
@@ -216,7 +256,7 @@ def showfeatures(W, H, titles, wordvec):
 
 # create numpy matrix from word/article-matrix
 wordInArtMatrix = np.matrix(wordInArt)
-W, H = nnmf(wordInArtMatrix, 15, 2)
+W, H = nnmf(wordInArtMatrix, 40, 10)
 showfeatures(W, H, articletitles, wordvec)
 
 
