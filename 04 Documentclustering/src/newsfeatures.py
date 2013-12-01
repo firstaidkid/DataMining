@@ -9,16 +9,22 @@ reload(sys)
 sys.setdefaultencoding("UTF-8")
 
 feedlist=["http://feeds.reuters.com/reuters/topNews","http://feeds.reuters.com/reuters/businessNews","http://feeds.reuters.com/reuters/worldNews","http://feeds2.feedburner.com/time/world","http://feeds2.feedburner.com/time/business","http://feeds2.feedburner.com/time/politics","http://rss.cnn.com/rss/edition.rss",	"http://rss.cnn.com/rss/edition_world.rss","http://newsrss.bbc.co.uk/rss/newsonline_world_edition/business/rss.xml","http://newsrss.bbc.co.uk/rss/newsonline_world_edition/europe/rss.xml","http://www.nytimes.com/services/xml/rss/nyt/World.xml","http://www.nytimes.com/services/xml/rss/nyt/Economy.xml"]
-
 parsedFeeds = list()
-for feed in feedlist:
-	print "Parsing feed: ",str(feed)
-	parsedFeeds.append(fp.parse(feed))
 
-# for feed in parsedFeeds:
-# 	for item in feed.entries:
-# 		print item.title
-# 		print item.description
+def parseFeeds(showParsing=False):
+	for feed in feedlist:
+		if showParsing == True:
+			print "Parsing feed: ",str(feed)
+		parsedFeeds.append(fp.parse(feed))
+
+def getFeedInfo():
+	for feed in parsedFeeds:
+		for item in feed.entries:
+			print "Title:"
+			print item.title
+			print "Description:"
+			print stripHTML(item.description)
+			print "-"*60
 
 def stripHTML(h):
 	p=""
@@ -106,14 +112,14 @@ def cleanMatrix(wordInArt, articletitles):
 		if sum(article) == 0:
 			wordInArt.pop(idx)
 			articletitles.pop(idx)
-			print "Cleaned allNulls with Index: " + str(idx)
+			#print "Cleaned allNulls with Index: " + str(idx)
 
 	return wordInArt, articletitles
 
 # create matrices
 allwords, articlewords, articletitles = getarticlewords()
 
-# create Wort-/Artikel-Matrix and Wortvektor
+# create Word-/Article-Matrix and Wordvector
 wordvec, wordInArt = makematrix(allwords, articlewords)
 
 # clean matrix by deleting articles with no words from wordvec
@@ -256,8 +262,8 @@ def showfeatures(W, H, titles, wordvec):
 
 
 # create numpy matrix from word/article-matrix
-wordInArtMatrix = np.matrix(wordInArt)
-W, H = nnmf(wordInArtMatrix, 40, 10)
-showfeatures(W, H, articletitles, wordvec)
+# wordInArtMatrix = np.matrix(wordInArt)
+# W, H = nnmf(wordInArtMatrix, 40, 10)
+# showfeatures(W, H, articletitles, wordvec)
 
 
