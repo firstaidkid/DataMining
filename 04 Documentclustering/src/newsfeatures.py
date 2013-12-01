@@ -12,6 +12,7 @@ feedlist=["http://feeds.reuters.com/reuters/topNews","http://feeds.reuters.com/r
 
 parsedFeeds = list()
 for feed in feedlist:
+	print "Parsing feed: ",str(feed)
 	parsedFeeds.append(fp.parse(feed))
 
 # for feed in parsedFeeds:
