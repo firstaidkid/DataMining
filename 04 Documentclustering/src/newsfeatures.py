@@ -273,22 +273,16 @@ def showfeatures(W, H, titles, wordvec):
 
 
 # create numpy matrix from word/article-matrix
-<<<<<<< HEAD
 # wordInArtMatrix = np.matrix(wordInArt)
+
+# print "-"*150
+# print "Calculating NNMF"
+# print "-"*150
 # W, H = nnmf(wordInArtMatrix, 40, 10)
+
+# print "-"*150
+# print "Calculating ShowFeatures"
+# print "-"*150
 # showfeatures(W, H, articletitles, wordvec)
-=======
-wordInArtMatrix = np.matrix(wordInArt)
-
-print "-"*150
-print "Calculating NNMF"
-print "-"*150
-W, H = nnmf(wordInArtMatrix, 40, 10)
-
-print "-"*150
-print "Calculating ShowFeatures"
-print "-"*150
-showfeatures(W, H, articletitles, wordvec)
->>>>>>> 47304a035207c81524e43e92b4fead6cb581f77a
 
 
