@@ -195,6 +195,10 @@ def showfeatures(W, H, titles, wordvec):
 	M = 3
 	subject = list()
 
+	# Aufgabe 2.3.1
+	print "-"*150
+	print "Printing the most relevant words for each feature"
+	print "-"*150
 	for i in range(H.shape[0]):
 		# create a list for every feature H
 		featureList = list()
@@ -219,6 +223,10 @@ def showfeatures(W, H, titles, wordvec):
 		subject.append(featuresWords)
 
 
+	print "-"*150
+	print "Printing the most relevant features for each article"
+	print "-"*150
+	# Aufgabe 2.3.2
 	# print the M=3 most relevant features for an article to the console
 	for i in range(W.shape[0]):
 		# create a list for every article in W
@@ -235,6 +243,9 @@ def showfeatures(W, H, titles, wordvec):
 		for item in relevanceList[0:M]:
 			print str(item[0]) +" "*(20-len(str(item[0]))) + str(item[1])
 
+	print "-"*150
+	print "Printing the most relevant articles for each feature"
+	print "-"*150
 	# print the M=3 most relevant articles for a feature to the console
 	for i in range(W.shape[1]):
 		# create a list for every posible feature of an article
@@ -257,7 +268,15 @@ def showfeatures(W, H, titles, wordvec):
 
 # create numpy matrix from word/article-matrix
 wordInArtMatrix = np.matrix(wordInArt)
+
+print "-"*150
+print "Calculating NNMF"
+print "-"*150
 W, H = nnmf(wordInArtMatrix, 40, 10)
+
+print "-"*150
+print "Calculating ShowFeatures"
+print "-"*150
 showfeatures(W, H, articletitles, wordvec)
 
 
