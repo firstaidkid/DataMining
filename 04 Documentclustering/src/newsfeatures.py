@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import feedparser as fp
 from nltk.corpus import stopwords
 import re
@@ -111,10 +112,10 @@ allwords, articlewords, articletitles = getarticlewords()
 # create Wort-/Artikel-Matrix and Wortvektor
 wordvec, wordInArt = makematrix(allwords, articlewords)
 
-# clean matrix by deleting articles with not words from wordvec
+# clean matrix by deleting articles with no words from wordvec
 wordInArt, articletitles = cleanMatrix(wordInArt, articletitles)
 
-# write intp data-file
+# write into data-file
 fout = open("../results/wv_awm.dat", "w")
 for idx, word in enumerate(wordvec):
 	if idx < (len(wordvec)-1):
@@ -138,7 +139,7 @@ fout.close()
 def cost(A, B):
 	return np.linalg.norm(A-B)
 
-# 2.2.4: Implementierung der NNMF
+# 2.2.4: Implementation of NNMF
 # Matrix: A, Number of Features: m, Number of Iterations: it
 def nnmf(A, m, it):
 	_costThreshold = 5
@@ -187,11 +188,35 @@ def nnmf(A, m, it):
 def showfeatures(W, H, titles, wordvec):
 	N = 6
 	M = 3
+	subject = list()
 	# TODO finish
+	for i in range(H.shape[0]):
+		featureList = list()
+		for j in range(H.shape[1]):
+			featureList.append([H[i,j], wordvec[j]])
+		featureList.sort()
+		featureList.reverse()
+
+		# print the N=6 most relevant words for a feature to the console
+		features = ""
+		print "The "+str(N)+" most relevant words for feature "+str(i)+ ":" 
+		for k in featureList[0:N]:
+			features = features + " " + str(k[1])
+			print str(k[1])+" "*(20-len(k[1]))+str(k[0])
+		print ""
+		subject.append(features)
+
+	
+	#print the M=3 most relevant features for an article to the console
+
+
+	
+
 
 
 # create numpy matrix from word/article-matrix
 wordInArtMatrix = np.matrix(wordInArt)
 W, H = nnmf(wordInArtMatrix, 15, 2)
+showfeatures(W, H, articletitles, wordvec)
 
 
