@@ -214,12 +214,7 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
-<<<<<<< HEAD
 *.sublime-project
-
 *.sublime-workspace
-=======
-*.sublime-workspace
-
-*.sublime-project
->>>>>>> steffen
+05 Face Recognition/test/
+05 Face Recognition/training/
