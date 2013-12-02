@@ -1,12 +1,15 @@
 from os.path import isdir,join,normpath
 from os import listdir
 
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
 import Image
 
-from numpy import asfarray,dot,argmin,zeros
-from numpy import average,sort,trace
+from numpy import asfarray,dot,argmin,zeros, array
+from numpy import average,sort,trace,argsort
 from numpy.linalg import svd,eigh
-from numpy import concatenate, reshape
+from numpy import concatenate, reshape, vstack
 from math import sqrt
 
 import tkFileDialog
@@ -32,11 +35,68 @@ def parseDirectory(directoryName,extension):
 #
 def generateListOfImgs(listOfTrainFiles):
     result = list()
-    for image in listOfTrainFiles:
-        img = Image.open(image)
-        width, height = img.size
-        print "Grab Image (%s), w: %f, h:%f" % (img, width, height)
+    # go through each file in the list
+    for fileName in listOfTrainFiles:
+        # open the image
+        img = Image.open(fileName)
+
+        # convert to grayscale
+        img = img.convert('L')
+
+        # get size
+        g_width, g_height = img.size
+
+        # print data
+        #print "Grab Image (%s), w: %f, h:%f" % (img, g_width, g_height)
+
+        # add to results-list
         result.append(img)
+    return result
+
+
+def convertImgListToNumpyData(imgList):
+    imgArrays = list()
+
+    for image in imgList:
+        # save data into array
+        npImage = asfarray(image)
+
+        # reshape to one line
+        npImage = npImage.reshape(1, image.size[0]*image.size[1])
+
+        # get the maximum value for this images
+        maxValue = npImage.max()
+
+        # normalize
+        npImage = npImage/maxValue
+
+        # push into results
+        imgArrays.append(npImage)
+
+    return concatenate(imgArrays, axis=0)
+
+
+def calculateEigenfaces(adjfaces, width, height):
+    # number of relevant vectors
+    K = 6
+
+    # calulate the quadratic matrix MxM
+    quadMatrix = dot(adjfaces, adjfaces.transpose())
+
+    # Calculate Eigenvalues and Eigenvectors
+    eigenValues, eigenVectors = eigh(quadMatrix)
+
+    # get sortindices for reverse sorting
+    sortIndices = argsort(eigenValues)[::-1]
+
+    # apply indices to arrays
+    #eigenValues = eigenValues[sortIndices][:K]
+    eigenVectors = eigenVectors[sortIndices][:K]
+
+    return eigenVectors
+
+
+
 
 
 ####################################################################################
@@ -52,9 +112,28 @@ testImageDirAndFilename=tkFileDialog.askopenfilename(title="Choose Image to dete
 ####################################################################################
 # Implement required functionality of the main programm here
 
+# global height/width
+g_width = 0
+g_height = 0
+
 # store all training-images in a list
 trainImages = generateListOfImgs(parseDirectory(TrainDir, Extension))
 
 # store the test-image
 testImage = Image.open(testImageDirAndFilename)
 
+# get numpyArray
+NormedArrayOfFaces = convertImgListToNumpyData(trainImages)
+
+# get the normed image
+normedImage = average(NormedArrayOfFaces, axis=0)
+
+# remove average image from all images
+for image in NormedArrayOfFaces:
+    image = image - normedImage
+
+# Calulate Eigenfaces with K = 6
+Usub = calculateEigenfaces(NormedArrayOfFaces, g_width, g_height)
+
+# calculate coordinates of the Normed Images in the Eigenface-Room
+NormedArrayOfFaces = dot(Usub, NormedArrayOfFaces)
