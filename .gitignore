@@ -218,3 +218,4 @@ pip-log.txt
 *.sublime-workspace
 05 Face Recognition/test/
 05 Face Recognition/training/
+.idea
