@@ -15,6 +15,7 @@ print __doc__
 import datetime
 from matplotlib import finance
 import numpy as np
+import sklearn.cluster as cl
 from matplotlib import pyplot as plt
 
 from sklearn import cluster
@@ -109,8 +110,12 @@ print "--------------------------open and close---------------------------------
 open    = np.array([q.open   for q in quotes]).astype(np.float)
 close   = np.array([q.close  for q in quotes]).astype(np.float)
 
+print "--------------------------difference-----------------------------------"
+# calculate difference for all values
+difference = open - close
+print difference.describe
 
-    
-    
+print "--------------------------similiarity matrix-----------------------------------"
+similiarityMatrix = difference.corrcoeff()
 
-
+cl.AffinityPropagation()

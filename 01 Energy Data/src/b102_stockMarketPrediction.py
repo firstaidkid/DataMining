@@ -61,13 +61,14 @@ svr = SVR(C= 500.0, epsilon= 0.3, kernel='rbf')
 fittedData = svr.fit(features, targets)
 
 # data to predict: last 30 days
-predict = cyclicYahoo[len(cyclicYahoo)-30:, :timeDelay]
+predictDuration = 30
+predict = cyclicYahoo[len(cyclicYahoo)-predictDuration:, :timeDelay]
 
 # predict the data using trainings-data from the SVR
 predictedData = svr.predict(predict)
 
 # calculate the absolute deviation
-absDeviation = predictedData - targets[len(targets)-30:]
+absDeviation = predictedData - targets[len(targets)-predictDuration:]
 meanAbsDevitation = absDeviation.mean()
 if meanAbsDevitation < 0:
     meanAbsDevitation *= -1
