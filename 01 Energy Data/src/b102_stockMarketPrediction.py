@@ -62,10 +62,35 @@ fittedData = svr.fit(features, targets)
 
 # data to predict: last 30 days
 predictDuration = 30
-predict = cyclicYahoo[len(cyclicYahoo)-predictDuration:, timeDelay:].reshape(650)
+predictedData = list()
 
-# predict the data using trainings-data from the SVR
-predictedData = svr.predict(predict)
+for i in range(predictDuration):
+
+    predictVector = np.zeros((timeDelay))
+
+    # how many value do we need to take from the targets?
+    nrOfTargets = timeDelay - i
+    if nrOfTargets < 0:
+        nrOfTargets = 0
+
+    # fill predictVector with data from targets
+    for j in range(nrOfTargets):
+        indexInTargets = 650-timeDelay+j
+        predictVector[j] = cyclicYahoo[indexInTargets, -1]
+
+    # now add all already predicted values // Pretty sure an error here: nrOfTargets+1 or something
+    for k in range(len(predictedData)):
+        predictVector[nrOfTargets+k] = predictedData[k]
+
+        # stop after 24 values in total
+        if k >= 23:
+            break
+
+    # predict the data using trainings-data from the SVR
+    predictedData.append(svr.predict(predictVector)[0])
+
+# print data from 651 > 680
+print predictedData
 
 # calculate the absolute deviation
 absDeviation = predictedData - targets[len(targets)-predictDuration:]
