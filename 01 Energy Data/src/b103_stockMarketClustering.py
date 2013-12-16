@@ -98,6 +98,7 @@ print symbols
 print "----------------------------Names---------------------------------------"
 print names
 
+# NOT WORKING!
 quotes = [finance.quotes_historical_yahoo(symbol, d1, d2, asobject=True)
                 for symbol in symbols]
 

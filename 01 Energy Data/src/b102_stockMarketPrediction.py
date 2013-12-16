@@ -62,7 +62,7 @@ fittedData = svr.fit(features, targets)
 
 # data to predict: last 30 days
 predictDuration = 30
-predict = cyclicYahoo[len(cyclicYahoo)-predictDuration:, :timeDelay]
+predict = cyclicYahoo[len(cyclicYahoo)-predictDuration:, timeDelay:].reshape(650)
 
 # predict the data using trainings-data from the SVR
 predictedData = svr.predict(predict)
