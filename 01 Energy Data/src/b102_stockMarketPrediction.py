@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.svm import SVR
+from sklearn.metrics import mean_absolute_error
 from sklearn import cross_validation
 
 
@@ -37,6 +38,7 @@ def createCyclicData(data, timeDelay):
 # read dataframe from file
 df = pd.DataFrame.from_csv("../resources/effectiveRates.csv")
 
+print "----------------------------Five Company Graphs---------------------------------------"
 # Choose five companies
 cleanedDataframe = df[['AMZN', 'MSFT', 'AAPL', 'YHOO', 'SAP']]
 
@@ -47,16 +49,23 @@ plt.show()
 # Choose yahoo
 yahooDf = df['YHOO']
 
-timeDelay = 24
+print "----------------------------Cyclic Data---------------------------------------"
+timeDelay = 18
+svrC = 500.0
+svrE = 1.8
+
+
 cyclicYahoo = createCyclicData(yahooDf, timeDelay)
+print cyclicYahoo
 
 # extract features and targets from data, use first 650 rows for training
 features = np.array(cyclicYahoo[:650,:timeDelay])
 targets = cyclicYahoo[:650, timeDelay:].reshape((650))
 
 # Create SVR with given settings
-svr = SVR(C= 500.0, epsilon= 0.3, kernel='rbf')
+svr = SVR(C= svrC, epsilon= svrE, kernel='rbf')
 
+print "----------------------------Fitting---------------------------------------"
 # start fitting
 fittedData = svr.fit(features, targets)
 
@@ -64,45 +73,51 @@ fittedData = svr.fit(features, targets)
 predictDuration = 30
 predictedData = list()
 
+print "----------------------------Prediction---------------------------------------"
 for i in range(predictDuration):
 
     predictVector = np.zeros((timeDelay))
+    # count from 23 to 0
+    for j in range(timeDelay-1,-1, -1):
+        # what is the index of the corresponding item in the predicted data?
+        idxPredict = len(predictedData)-j-1
 
-    # how many value do we need to take from the targets?
-    nrOfTargets = timeDelay - i
-    if nrOfTargets < 0:
-        nrOfTargets = 0
+        # if we are below 0, it means we do not have any more predicted values
+        if idxPredict >= 0:
+            predictVector[j] = predictedData[idxPredict]
+            #print "From predicted %f" % predictVector[j]
+            continue # could get value from predicted data -> use it!
 
-    # fill predictVector with data from targets
-    for j in range(nrOfTargets):
-        indexInTargets = 650-timeDelay+j
-        predictVector[j] = cyclicYahoo[indexInTargets, -1]
-
-    # now add all already predicted values // Pretty sure an error here: nrOfTargets+1 or something
-    for k in range(len(predictedData)):
-        # from back to front
-        # calculate index from predicted data: if we have more than 24, do not start at 0!
-        idx = k
-        if len(predictedData) > timeDelay:
-            idx +=  len(predictedData) - timeDelay
-
-        predictVector[nrOfTargets - k] = predictedData[idx]
-
-        # stop after 24 values in total
-        if k >= 23:
-            break
+        # we could not fill the whole vector with already predicted data, fill it with already known data
+        idxTarget = 650 - j + len(predictedData)
+        predictVector[j] = cyclicYahoo[idxTarget, -1]
+       # print "From target %f" % predictVector[j]
 
     # predict the data using trainings-data from the SVR
     predictedData.append(svr.predict(predictVector)[0])
 
+# stuff into a numpy array
+predictedData = np.array(predictedData)
+
 # print data from 651 -> 680
+print "Predicted Data"
 print predictedData
+print "\nReal Values"
 print targets[len(targets)-predictDuration:]
 
+print "----------------------------MAD/MAE---------------------------------------"
 # calculate the absolute deviation
-absDeviation = predictedData - targets[len(targets)-predictDuration:]
-meanAbsDevitation = absDeviation.mean()
-if meanAbsDevitation < 0:
-    meanAbsDevitation *= -1
-print "\nMean Absolute Deviation: %0.3f" % meanAbsDevitation
+mae = mean_absolute_error(targets[len(targets)-predictDuration:], predictedData)
+mad = 1.0/predictDuration*np.sum(np.abs(predictedData-targets[len(targets)-predictDuration:]))
 
+print "\nMean Absolute Deviation:\t%0.3f" % mad
+print "Mean Absolute Error:\t\t%0.3f" % mae
+
+print "----------------------------PLOT---------------------------------------"
+# plot everything out
+realForecast = cyclicYahoo[649:(650+predictDuration), -1]
+plt.plot(range(650,650+predictDuration),predictedData, '-r', label="prediction")
+plt.plot(range(len(targets)), targets, '-k', label="real")
+plt.plot(range(649, 650+predictDuration), realForecast, '-b', label="forecast")
+plt.legend()
+plt.show()
