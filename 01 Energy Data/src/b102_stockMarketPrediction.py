@@ -80,7 +80,13 @@ for i in range(predictDuration):
 
     # now add all already predicted values // Pretty sure an error here: nrOfTargets+1 or something
     for k in range(len(predictedData)):
-        predictVector[nrOfTargets+k] = predictedData[k]
+        # from back to front
+        # calculate index from predicted data: if we have more than 24, do not start at 0!
+        idx = k
+        if len(predictedData) > timeDelay:
+            idx +=  len(predictedData) - timeDelay
+
+        predictVector[nrOfTargets - k] = predictedData[idx]
 
         # stop after 24 values in total
         if k >= 23:
@@ -89,8 +95,9 @@ for i in range(predictDuration):
     # predict the data using trainings-data from the SVR
     predictedData.append(svr.predict(predictVector)[0])
 
-# print data from 651 > 680
+# print data from 651 -> 680
 print predictedData
+print targets[len(targets)-predictDuration:]
 
 # calculate the absolute deviation
 absDeviation = predictedData - targets[len(targets)-predictDuration:]
